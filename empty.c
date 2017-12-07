@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include "shader.h"
 
 static void error_callback(int error, const char* description)
 {
@@ -45,7 +46,18 @@ int main()
   /* start GLEW extension handler */
   glewExperimental = GL_TRUE;
   glewInit();
- 
+
+  /* create shaders */ 
+  GLuint vertexShader = loadShader(GL_VERTEX_SHADER, "vshader.glsl");
+  GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, "fshader.glsl");
+  
+  GLuint program = glCreateProgram();
+  glAttachShader(program, vertexShader);
+  glAttachShader(program, fragmentShader);
+  glLinkProgram(program);
+
+  glUseProgram(program);
+
   /* get version info */
   renderer = glGetString(GL_RENDERER);
   version = glGetString(GL_VERSION);
