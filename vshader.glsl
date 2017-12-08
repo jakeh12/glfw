@@ -1,9 +1,10 @@
 #version 410 core
 
-layout(location = 0) in vec3 vertexPosition_modelspace;
+in vec3 position;
+
+out vec3 color;
 
 void main() {
-  gl_Position.xyz = vertexPosition_modelspace;
-  gl_Position.w = 1.0;
+  gl_Position = vec4(position*0.2, 1.0);
+  color = vec3(1.0, position.x + 0.5, position.y + 0.5);
 }
-
