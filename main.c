@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "matrix.h"
 #include "draw.h"
+#include "camera.h"
 
 static void error_callback(int error, const char* description)
 {
@@ -109,10 +110,6 @@ int main()
   /* generate VBO */
   GLuint vbo = generate_buffer(sizeof(g_vertex_buffer_data), g_vertex_buffer_data);
 
-  float temp[16];
-  mat_identity(temp);
-
-  float degrees = 0.0f;
   while(!glfwWindowShouldClose(window)) {
 
 
@@ -122,13 +119,12 @@ int main()
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-      set_matrix(mvp_matrix, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+      set_matrix(mvp_matrix, 4.0f, 3.0f, 3.0f, deg_to_rad(-45.0f), deg_to_rad(-30.0f));
       glUniformMatrix4fv(glGetUniformLocation(program, "mvp_matrix"), 1, GL_FALSE, mvp_matrix);
 
-      draw_triangles(vbo, 12*3);
+      draw_triangles(vbo, 36);
       // **** DONE RENDER ****
 
-      degrees += 0.1f;
 
 
       glfwSwapBuffers(window);

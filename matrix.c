@@ -252,10 +252,6 @@ void set_matrix(float m[], float x, float y, float z, float rx, float ry)
 {
   float a[16];
   float b[16];
-  float fov = deg_to_rad(45.0f);
-  float aspect = 4.0f/3.0f;
-  float znear = 0.1f;
-  float zfar = 100.f;
   mat_identity(a);
   mat_translate(b, -x, -y, -z);
   mat_multiply(a, b, a);
@@ -263,12 +259,10 @@ void set_matrix(float m[], float x, float y, float z, float rx, float ry)
   mat_multiply(a, b, a);
   mat_rotate(b, 0.0f, 1.0f, 0.0f, -rx);
   mat_multiply(a, b, a);
-  mat_perspective(b, fov, aspect, znear, zfar);
+  mat_perspective(b, deg_to_rad(60.0f), 4.0f/3.0, 0.1f, 100.0f);
   mat_multiply(a, b, a);
   mat_identity(m);
   mat_multiply(m, a, m);
-
-  mat_print(m);
 }
 
 void mat_print(float m[])
