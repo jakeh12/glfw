@@ -48,14 +48,14 @@ int main()
   glewExperimental = GL_TRUE;
   glewInit();
 
-  /* create a vertex buffer */
+  /* object to render */
   static GLfloat g_vertex_buffer_data[] = {
-    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-    -1.0f,-1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, // triangle 1 : end
-    1.0f, 1.0f,-1.0f, // triangle 2 : begin
     -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, // triangle 2 : end
+    -1.0f,-1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f,
     1.0f,-1.0f, 1.0f,
     -1.0f,-1.0f,-1.0f,
     1.0f,-1.0f,-1.0f,
@@ -88,6 +88,18 @@ int main()
     1.0f,-1.0f, 1.0f
 };
 
+  /* create shaders */
+  GLuint vertex_shader = load_shader(GL_VERTEX_SHADER, "vshader.glsl");
+  GLuint fragment_shader = load_shader(GL_FRAGMENT_SHADER, "fshader.glsl");
+  GLuint program = make_program(vertex_shader, fragment_shader);
+
+  /* create transformation matrix */
+  static GLfloat mvp_matrix[16];
+
+  /* tell GL to only draw onto a pixel if the shape is closer to the viewer */
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
+  glDepthFunc(GL_LESS);
 
   /* generate VAO */
   GLuint vao;
@@ -97,72 +109,27 @@ int main()
   /* generate VBO */
   GLuint vbo = generate_buffer(sizeof(g_vertex_buffer_data), g_vertex_buffer_data);
 
-  /* create shaders */
-  GLuint shaders[2];
-  shaders[0] = load_shader(GL_VERTEX_SHADER, "vshader.glsl");
-  shaders[1] = load_shader(GL_FRAGMENT_SHADER, "fshader.glsl");
-  GLuint program = make_program(shaders, 2);
+  float temp[16];
+  mat_identity(temp);
 
-  /* create model matrix */
-  static GLfloat model_matrix[16] = {
-    0.2f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.2f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.2f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-  };
-
-
-  /* create view matrix */
-  static GLfloat view_matrix[16] = {
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-  };
-
-  /* create projection matrix */
-  static GLfloat projection_matrix[16] = {
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-  };
-
-  glUseProgram(program);
-
-  GLint model_loc = glGetUniformLocation(program, "model_matrix");
-  glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_matrix);
-  GLint view_loc = glGetUniformLocation(program, "view_matrix");
-  glUniformMatrix4fv(view_loc, 1, GL_FALSE, view_matrix);
-  GLint projection_loc = glGetUniformLocation(program, "projection_matrix");
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, projection_matrix);
-
-
-  /* get version info */
-  renderer = glGetString(GL_RENDERER);
-  version = glGetString(GL_VERSION);
-  printf("Renderer: %s\n", renderer);
-  printf("OpenGL version supported: %s\n", version);
-
-  /* tell GL to only draw onto a pixel if the shape is closer to the viewer */
-  glEnable(GL_DEPTH_TEST);
-  //glEnable(GL_CULL_FACE);
-  glDepthFunc(GL_LESS);
-
-  /* OTHER STUFF GOES HERE NEXT */
-  int width, height;
+  float degrees = 0.0f;
   while(!glfwWindowShouldClose(window)) {
 
-      glfwGetFramebufferSize(window, &width, &height);
-      glViewport(0, 0, width, height);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      //rotate(model_matrix, deg_to_rad(1.0), deg_to_rad(0.0), deg_to_rad(0.0));
 
       // **** RENDER ****
       glUseProgram(program);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+      set_matrix(mvp_matrix, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+      glUniformMatrix4fv(glGetUniformLocation(program, "mvp_matrix"), 1, GL_FALSE, mvp_matrix);
+
       draw_triangles(vbo, 12*3);
       // **** DONE RENDER ****
+
+      degrees += 0.1f;
+
 
       glfwSwapBuffers(window);
       glfwPollEvents();

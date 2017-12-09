@@ -15,7 +15,7 @@
 char* load_file(const char* path);
 GLuint make_shader(GLenum type, const char* source);
 GLuint load_shader(GLenum type, const char* path);
-GLuint make_program(GLuint shaders[], int num);
+GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
 GLuint generate_buffer(GLuint size, GLfloat* data);
 void delete_buffer(GLuint buffer);
 

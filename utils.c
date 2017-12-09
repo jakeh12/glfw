@@ -45,13 +45,11 @@ GLuint load_shader(GLenum type, const char* path)
   return shader;
 }
 
-GLuint make_program(GLuint shaders[], int num)
+GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
 {
   GLuint program = glCreateProgram();
-  int i;
-  for (i = 0; i < num; i++) {
-    glAttachShader(program, shaders[i]);
-  }
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
   glLinkProgram(program);
   GLint success;
   glGetProgramiv(program, GL_LINK_STATUS, &success);
@@ -62,11 +60,11 @@ GLuint make_program(GLuint shaders[], int num)
     glGetProgramInfoLog(program, length, NULL, info);
     fprintf(stderr, "glLinkProgram failed:\n%s\n", info);
     free(info);
+    glDetachShader(program, vertex_shader);
+    glDetachShader(program, fragment_shader);
   }
-  for (i = 0; i < num; i++) {
-    glDetachShader(program, shaders[i]);
-    glDeleteShader(shaders[i]);
-  }
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
   return program;
 }
 
