@@ -6,6 +6,8 @@
 #include "draw.h"
 #include "camera.h"
 
+camera_t* cam;
+
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
@@ -13,15 +15,42 @@ static void error_callback(int error, const char* description)
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+      glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+    else if(key == GLFW_KEY_W && action == GLFW_PRESS) {
+      camera_forward(cam);
+    }
+    else if(key == GLFW_KEY_S && action == GLFW_PRESS) {
+      camera_backward(cam);
+    }
+    else if(key == GLFW_KEY_D && action == GLFW_PRESS) {
+      camera_rightward(cam);
+    }
+    else if(key == GLFW_KEY_A && action == GLFW_PRESS) {
+      camera_leftward(cam);
+    }
+}
+
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+  static double oldx, old;
+
+  float sensitivity = 4.0f;
+
+  double dx = xpos - oldx;
+  double dy = ypos - oldy;
+
+  cam->rx += deg_to_rad(dx / sensitivity);
+  cam->ry += -deg_to_rad(dy / sensitivity);
+
+  oldx = xpos;
+  oldy = ypos;
 }
 
 int main()
 {
   GLFWwindow* window = NULL;
-  const GLubyte* renderer;
-  const GLubyte* version;
 
   glfwSetErrorCallback(error_callback);
 
@@ -42,7 +71,11 @@ int main()
     return 1;
   }
 
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
   glfwSetKeyCallback(window, key_callback);
+  glfwSetCursorPosCallback(window, cursor_position_callback);
+
   glfwMakeContextCurrent(window);
 
   /* start GLEW extension handler */
@@ -110,6 +143,15 @@ int main()
   /* generate VBO */
   GLuint vbo = generate_buffer(sizeof(g_vertex_buffer_data), g_vertex_buffer_data);
 
+  /* other stuff */
+
+  cam = camera_create();
+  cam->x = 4.0f;
+  cam->y = 3.0f;
+  cam->z = 3.0f;
+  cam->rx = deg_to_rad(-45.0f);
+  cam->ry = deg_to_rad(-30.0f);
+
   while(!glfwWindowShouldClose(window)) {
 
 
@@ -119,7 +161,7 @@ int main()
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-      set_matrix(mvp_matrix, 4.0f, 3.0f, 3.0f, deg_to_rad(-45.0f), deg_to_rad(-30.0f));
+      set_matrix(mvp_matrix, cam->x, cam->y, cam->z, cam->rx, cam->ry);
       glUniformMatrix4fv(glGetUniformLocation(program, "mvp_matrix"), 1, GL_FALSE, mvp_matrix);
 
       draw_triangles(vbo, 36);
